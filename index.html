@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#FFF8EE" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>じすいメモ</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg: #fff8ee;
+      --card: #ffffff;
+      --ink: #2f2a25;
+      --muted: #786f67;
+      --line: #eadfce;
+      --accent: #d97a3d;
+      --accent-soft: #fbe7d7;
+      --green: #6b8f71;
+      --green-soft: #edf4ee;
+      --danger: #b9504f;
+      --shadow: 0 8px 28px rgba(81, 59, 39, 0.08);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+      min-height: 100vh;
+    }
+
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      width: min(100%, 520px);
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) 16px calc(92px + env(safe-area-inset-bottom));
+    }
+
+    header {
+      padding: 18px 4px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: .02em;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #8e4d24;
+      font-size: 12px;
+      font-weight: 700;
+      border: 0;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .hero-card, .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(232, 219, 202, .75);
+    }
+
+    .hero-card {
+      padding: 20px;
+      margin: 10px 0 16px;
+      background: linear-gradient(180deg, #fffdf9 0%, #fff8ee 100%);
+    }
+
+    .hero-card h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .hero-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .card {
+      padding: 18px;
+      margin: 12px 0;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 17px;
+    }
+
+    .section-title {
+      margin: 22px 4px 10px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+
+    .action-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .big-action {
+      border: 0;
+      width: 100%;
+      min-height: 82px;
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+      background: var(--card);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(232, 219, 202, .75);
+    }
+
+    .big-action strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .big-action span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .big-action .emoji {
+      font-size: 28px;
+      margin-left: 12px;
+    }
+
+    .ingredient-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 34px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: #46644d;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .field {
+      margin: 14px 0;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      background: #fffdf9;
+      padding: 14px;
+      color: var(--ink);
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #dca277;
+      box-shadow: 0 0 0 3px rgba(217, 122, 61, .10);
+    }
+
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .seg-wrap {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .seg-wrap.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .seg-wrap.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .seg-btn {
+      min-height: 46px;
+      border-radius: 13px;
+      border: 1.5px solid var(--line);
+      background: #fffdf9;
+      color: var(--ink);
+      font-weight: 700;
+      padding: 10px;
+    }
+
+    .seg-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #89491f;
+    }
+
+    .primary, .secondary, .danger {
+      width: 100%;
+      border-radius: 16px;
+      min-height: 52px;
+      padding: 14px 16px;
+      font-weight: 800;
+    }
+
+    .primary {
+      border: 0;
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 8px 18px rgba(217, 122, 61, .22);
+    }
+
+    .secondary {
+      border: 1.5px solid var(--line);
+      background: white;
+      color: var(--ink);
+    }
+
+    .danger {
+      border: 1.5px solid #f0c3c2;
+      background: #fff6f6;
+      color: var(--danger);
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .ingredient-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .ingredient-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 15px;
+      border: 1px solid var(--line);
+      background: #fffdf9;
+    }
+
+    .ingredient-main {
+      min-width: 0;
+    }
+
+    .ingredient-main strong {
+      font-size: 15px;
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .ingredient-main span {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+      display: block;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 11px;
+      min-width: 40px;
+      height: 40px;
+      padding: 0 10px;
+    }
+
+    .back {
+      border: 0;
+      background: transparent;
+      padding: 6px 8px 6px 0;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .screen-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    .screen-head h2 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .helper {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .prompt-box {
+      margin-top: 12px;
+      display: none;
+    }
+
+    .prompt-box.visible { display: block; }
+
+    .copy-feedback {
+      margin-top: 8px;
+      min-height: 20px;
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .cheap-grid {
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 10px;
+    }
+
+    nav {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: min(100%, 520px);
+      background: rgba(255, 252, 247, .95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .nav-btn {
+      border: 0;
+      background: transparent;
+      min-height: 58px;
+      border-radius: 14px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .nav-btn .nav-icon {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 3px;
+    }
+
+    .nav-btn.active {
+      color: #8b4c24;
+      background: var(--accent-soft);
+    }
+
+    .mini-note {
+      padding: 11px 12px;
+      background: #f8f2e9;
+      color: var(--muted);
+      border-radius: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      margin: 10px 0 0;
+    }
+
+    @media (max-width: 360px) {
+      .seg-wrap.three { grid-template-columns: 1fr; }
+      .cheap-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <h1>じすいメモ</h1>
+      <p>食材を見て、GPTに聞くだけ。</p>
+    </div>
+    <button class="pill" onclick="go('ingredients')">🥕 食材</button>
+  </header>
+
+  <main>
+    <section id="home" class="screen active">
+      <div class="hero-card">
+        <h2>今日も、考えすぎず自炊。</h2>
+        <p>家にあるものを登録しておけば、今日の献立も買い物も、GPTに聞くための文章をすぐ作れます。</p>
+      </div>
+
+      <div class="card">
+        <h3>今ある食材</h3>
+        <div id="homeIngredients" class="ingredient-preview"></div>
+        <div class="helper">よく使う食材だけ入れておけばOKです。</div>
+      </div>
+
+      <div class="section-title">何をする？</div>
+      <div class="action-grid">
+        <button class="big-action" onclick="go('cook')">
+          <div>
+            <strong>今日何作る？</strong>
+            <span>今ある食材から3案を考える</span>
+          </div>
+          <div class="emoji">🍳</div>
+        </button>
+        <button class="big-action" onclick="go('shop')">
+          <div>
+            <strong>買い物する</strong>
+            <span>数日分の買い足しを相談する</span>
+          </div>
+          <div class="emoji">🛒</div>
+        </button>
+        <button class="big-action" onclick="go('ingredients')">
+          <div>
+            <strong>食材を管理</strong>
+            <span>追加・編集・削除</span>
+          </div>
+          <div class="emoji">🥬</div>
+        </button>
+      </div>
+    </section>
+
+    <section id="ingredients" class="screen">
+      <div class="screen-head">
+        <button class="back" onclick="go('home')">‹ 戻る</button>
+        <h2>食材を管理</h2>
+      </div>
+
+      <div class="card">
+        <h3 id="formTitle">食材を追加</h3>
+        <div class="field">
+          <label for="ingredientName">食材名</label>
+          <input id="ingredientName" placeholder="例：卵" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="ingredientQty">量</label>
+          <input id="ingredientQty" placeholder="例：6個 / 300g / あり" autocomplete="off">
+        </div>
+        <button id="saveIngredientBtn" class="primary" onclick="saveIngredient()">追加する</button>
+        <button id="cancelEditBtn" class="secondary" style="display:none;margin-top:8px" onclick="cancelEdit()">編集をやめる</button>
+      </div>
+
+      <div class="section-title">登録中の食材</div>
+      <div id="ingredientList" class="ingredient-list"></div>
+    </section>
+
+    <section id="cook" class="screen">
+      <div class="screen-head">
+        <button class="back" onclick="go('home')">‹ 戻る</button>
+        <h2>今日何作る？</h2>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label>手間</label>
+          <div class="seg-wrap three" data-group="cookEffort">
+            <button class="seg-btn active" data-value="楽">楽</button>
+            <button class="seg-btn" data-value="普通">普通</button>
+            <button class="seg-btn" data-value="しっかり">しっかり</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>調理時間</label>
+          <div class="seg-wrap three" data-group="cookTime">
+            <button class="seg-btn active" data-value="15分以内">15分以内</button>
+            <button class="seg-btn" data-value="30分以内">30分以内</button>
+            <button class="seg-btn" data-value="気にしない">気にしない</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>料理ジャンル</label>
+          <div class="seg-wrap four" data-group="cookGenre">
+            <button class="seg-btn active" data-value="指定なし">指定なし</button>
+            <button class="seg-btn" data-value="和食">和食</button>
+            <button class="seg-btn" data-value="洋食">洋食</button>
+            <button class="seg-btn" data-value="中華">中華</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>料理の雰囲気</label>
+          <div class="seg-wrap four" data-group="cookMood">
+            <button class="seg-btn active" data-value="指定なし">指定なし</button>
+            <button class="seg-btn" data-value="優しい">優しい</button>
+            <button class="seg-btn" data-value="普通">普通</button>
+            <button class="seg-btn" data-value="がっつり">がっつり</button>
+          </div>
+        </div>
+
+        <button class="primary" onclick="generateCookPrompt()">料理を提案して</button>
+      </div>
+
+      <div id="cookPromptBox" class="card prompt-box">
+        <h3>GPTに送るプロンプト</h3>
+        <textarea id="cookPrompt" readonly></textarea>
+        <button class="secondary" onclick="copyText('cookPrompt','cookCopyFeedback')">プロンプトをコピー</button>
+        <div id="cookCopyFeedback" class="copy-feedback"></div>
+      </div>
+    </section>
+
+    <section id="shop" class="screen">
+      <div class="screen-head">
+        <button class="back" onclick="go('home')">‹ 戻る</button>
+        <h2>買い物する</h2>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label>何日分買う？</label>
+          <div class="seg-wrap four" data-group="shopDays">
+            <button class="seg-btn" data-value="2">2日</button>
+            <button class="seg-btn active" data-value="3">3日</button>
+            <button class="seg-btn" data-value="5">5日</button>
+            <button class="seg-btn" data-value="7">7日</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>優先したいこと</label>
+          <div class="seg-wrap four" data-group="shopPriority">
+            <button class="seg-btn active" data-value="節約">節約</button>
+            <button class="seg-btn" data-value="料理の種類を増やす">料理の種類を増やす</button>
+            <button class="seg-btn" data-value="今ある食材を使い切る">今ある食材を使い切る</button>
+            <button class="seg-btn" data-value="バランスよく">バランスよく</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>料理の手間</label>
+          <div class="seg-wrap three" data-group="shopEffort">
+            <button class="seg-btn active" data-value="楽">楽</button>
+            <button class="seg-btn" data-value="普通">普通</button>
+            <button class="seg-btn" data-value="気にしない">気にしない</button>
+          </div>
+        </div>
+
+        <button class="primary" onclick="generateShopPrompt()">買うものを考えて</button>
+      </div>
+
+      <div id="shopPromptBox" class="card prompt-box">
+        <h3>GPTに送るプロンプト</h3>
+        <textarea id="shopPrompt" readonly></textarea>
+        <button class="secondary" onclick="copyText('shopPrompt','shopCopyFeedback')">プロンプトをコピー</button>
+        <div id="shopCopyFeedback" class="copy-feedback"></div>
+      </div>
+
+      <div class="section-title">スーパーで安い食材を見つけた</div>
+      <div class="card">
+        <div class="cheap-grid">
+          <div class="field" style="margin-top:0">
+            <label for="cheapName">食材名</label>
+            <input id="cheapName" placeholder="例：鶏もも肉">
+          </div>
+          <div class="field" style="margin-top:0">
+            <label for="cheapPrice">価格</label>
+            <input id="cheapPrice" placeholder="98円/100g">
+          </div>
+        </div>
+        <button class="primary" onclick="generateCheapPrompt()">この食材を買う前提で考える</button>
+      </div>
+
+      <div id="cheapPromptBox" class="card prompt-box">
+        <h3>GPTに送るプロンプト</h3>
+        <textarea id="cheapPrompt" readonly></textarea>
+        <button class="secondary" onclick="copyText('cheapPrompt','cheapCopyFeedback')">プロンプトをコピー</button>
+        <div id="cheapCopyFeedback" class="copy-feedback"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav>
+  <button class="nav-btn active" data-screen="home" onclick="go('home')">
+    <span class="nav-icon">🏠</span>ホーム
+  </button>
+  <button class="nav-btn" data-screen="cook" onclick="go('cook')">
+    <span class="nav-icon">🍳</span>今日何作る
+  </button>
+  <button class="nav-btn" data-screen="shop" onclick="go('shop')">
+    <span class="nav-icon">🛒</span>買い物
+  </button>
+</nav>
+
+<script>
+  const STORAGE_KEY = 'jisuiMemo.ingredients.v1';
+  let ingredients = [];
+  let editingId = null;
+
+  function loadIngredients() {
+    try {
+      ingredients = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch {
+      ingredients = [];
+    }
+    renderIngredients();
+    renderHomeIngredients();
+  }
+
+  function persistIngredients() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ingredients));
+    renderIngredients();
+    renderHomeIngredients();
+  }
+
+  function go(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.screen === id);
+    });
+
+    if (id === 'ingredients') {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function saveIngredient() {
+    const nameEl = document.getElementById('ingredientName');
+    const qtyEl = document.getElementById('ingredientQty');
+    const name = nameEl.value.trim();
+    const qty = qtyEl.value.trim();
+
+    if (!name) {
+      alert('食材名を入力してください。');
+      nameEl.focus();
+      return;
+    }
+
+    if (editingId) {
+      const target = ingredients.find(i => i.id === editingId);
+      if (target) {
+        target.name = name;
+        target.qty = qty || 'あり';
+      }
+    } else {
+      ingredients.unshift({
+        id: Date.now().toString(),
+        name,
+        qty: qty || 'あり'
+      });
+    }
+
+    persistIngredients();
+    nameEl.value = '';
+    qtyEl.value = '';
+    cancelEdit();
+  }
+
+  function editIngredient(id) {
+    const item = ingredients.find(i => i.id === id);
+    if (!item) return;
+
+    editingId = id;
+    document.getElementById('ingredientName').value = item.name;
+    document.getElementById('ingredientQty').value = item.qty;
+    document.getElementById('formTitle').textContent = '食材を編集';
+    document.getElementById('saveIngredientBtn').textContent = '変更を保存';
+    document.getElementById('cancelEditBtn').style.display = 'block';
+    document.getElementById('ingredientName').focus();
+  }
+
+  function cancelEdit() {
+    editingId = null;
+    document.getElementById('formTitle').textContent = '食材を追加';
+    document.getElementById('saveIngredientBtn').textContent = '追加する';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+  }
+
+  function deleteIngredient(id) {
+    const item = ingredients.find(i => i.id === id);
+    if (!item) return;
+    if (!confirm(`「${item.name}」を削除しますか？`)) return;
+    ingredients = ingredients.filter(i => i.id !== id);
+    if (editingId === id) cancelEdit();
+    persistIngredients();
+  }
+
+  function renderIngredients() {
+    const list = document.getElementById('ingredientList');
+    if (!list) return;
+
+    if (ingredients.length === 0) {
+      list.innerHTML = '<div class="card empty">まだ食材がありません。<br>卵・肉・野菜など、今あるものから少しずつ登録してみてください。</div>';
+      return;
+    }
+
+    list.innerHTML = ingredients.map(item => `
+      <div class="ingredient-item">
+        <div class="ingredient-main">
+          <strong>${escapeHtml(item.name)}</strong>
+          <span>${escapeHtml(item.qty || 'あり')}</span>
+        </div>
+        <div class="item-actions">
+          <button class="icon-btn" aria-label="編集" onclick="editIngredient('${item.id}')">✏️</button>
+          <button class="icon-btn" aria-label="削除" onclick="deleteIngredient('${item.id}')">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderHomeIngredients() {
+    const box = document.getElementById('homeIngredients');
+    if (!box) return;
+
+    if (ingredients.length === 0) {
+      box.innerHTML = '<span class="empty">まだ登録されていません。</span>';
+      return;
+    }
+
+    const show = ingredients.slice(0, 6);
+    box.innerHTML = show.map(i =>
+      `<span class="chip">${escapeHtml(i.name)} ${escapeHtml(i.qty || '')}</span>`
+    ).join('') + (ingredients.length > 6 ? `<span class="chip">＋${ingredients.length - 6}件</span>` : '');
+  }
+
+  function getSelected(group) {
+    const active = document.querySelector(`[data-group="${group}"] .seg-btn.active`);
+    return active ? active.dataset.value : '';
+  }
+
+  function ingredientText() {
+    if (ingredients.length === 0) return '・登録なし';
+    return ingredients.map(i => `・${i.name}：${i.qty || 'あり'}`).join('\n');
+  }
+
+  function generateCookPrompt() {
+    const effort = getSelected('cookEffort');
+    const time = getSelected('cookTime');
+    const genre = getSelected('cookGenre');
+    const mood = getSelected('cookMood');
+
+    const prompt = `一人暮らし・自炊初心者向けに、今日作る料理を考えてください。
+
+【現在家にある食材】
+${ingredientText()}
+
+【希望条件】
+・手間：${effort}
+・調理時間：${time}
+・料理ジャンル：${genre}
+・料理の雰囲気：${mood}
+
+【提案するときの方針】
+・現在家にある食材をなるべく活用してください
+・追加購入する材料はできるだけ少なくしてください
+・特殊な調味料はなるべく使わないでください
+・自炊初心者でも失敗しにくいよう、調理工程を複雑にしすぎないでください
+・一人分、または余っても翌日扱いやすい量を前提にしてください
+・条件に合う料理候補を3つ程度出してください
+・候補ごとに「料理名」「必要な追加材料」「簡単な作り方」「所要時間」を書いてください
+・今ある食材だけで作れる候補があれば優先してください
+・材料が足りない場合は、少ない買い足しで成立する案を優先してください
+
+最後に、3案の中から「いちばん楽」「いちばん今ある食材を活かせる」「いちばん満足感が高い」のおすすめを1つずつ教えてください。`;
+
+    document.getElementById('cookPrompt').value = prompt;
+    document.getElementById('cookPromptBox').classList.add('visible');
+    document.getElementById('cookCopyFeedback').textContent = '';
+    document.getElementById('cookPromptBox').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function generateShopPrompt() {
+    const days = getSelected('shopDays');
+    const priority = getSelected('shopPriority');
+    const effort = getSelected('shopEffort');
+
+    const prompt = `一人暮らし・自炊初心者向けに、これから${days}日分の買い物内容を考えてください。
+
+【現在家にある食材】
+${ingredientText()}
+
+【希望条件】
+・買う日数：${days}日分
+・優先したいこと：${priority}
+・料理の手間：${effort}
+
+【提案するときの方針】
+・現在ある食材と組み合わせやすいものを優先してください
+・複数の料理に使い回せる食材を優先してください
+・一人分で大量に余りにくいものを優先してください
+・特殊な食材や調味料はなるべく避けてください
+・自炊初心者でも扱いやすい食材を優先してください
+・買うものは優先順位付きで提示してください
+・各食材について「これを買うと何が作りやすくなるか」を簡単に説明してください
+・数日分の料理候補も簡単に提示してください
+・買いすぎにならないよう、必要量の目安も付けてください
+・家にすでにある食材は、重複して買わないようにしてください
+
+出力は、
+1. 絶対に買う候補
+2. 余裕があれば買う候補
+3. ${days}日分の簡単な料理イメージ
+の順で見やすくまとめてください。`;
+
+    document.getElementById('shopPrompt').value = prompt;
+    document.getElementById('shopPromptBox').classList.add('visible');
+    document.getElementById('shopCopyFeedback').textContent = '';
+    document.getElementById('shopPromptBox').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function generateCheapPrompt() {
+    const name = document.getElementById('cheapName').value.trim();
+    const price = document.getElementById('cheapPrice').value.trim();
+
+    if (!name) {
+      alert('安かった食材名を入力してください。');
+      document.getElementById('cheapName').focus();
+      return;
+    }
+
+    const prompt = `スーパーで安い食材を見つけました。自炊初心者の一人暮らしという前提で、買うべきか相談に乗ってください。
+
+【気になっている食材】
+・食材：${name}
+・価格：${price || '価格入力なし'}
+
+【現在家にある食材】
+${ingredientText()}
+
+【知りたいこと】
+・今ある食材と組み合わせると、どんな料理が作れますか
+・この食材を今買う価値はありそうですか
+・買うなら、追加で何を買うと料理の選択肢が増えますか
+・一人暮らしでも数日で無理なく使い切れそうですか
+・初心者でも扱いやすい使い方を優先してください
+
+【方針】
+・特殊な調味料や食材を前提にしないでください
+・複数の料理に使い回せる案を優先してください
+・大量に余る可能性が高い場合は、その点をはっきり指摘してください
+・価格について地域差や相場が分からない場合は、断定しすぎず「価格だけでは判断しにくい」と明記してください
+
+最後に、「買ってよさそう / 条件付きで買う / 今回は見送ってよさそう」の3段階で結論を出してください。`;
+
+    document.getElementById('cheapPrompt').value = prompt;
+    document.getElementById('cheapPromptBox').classList.add('visible');
+    document.getElementById('cheapCopyFeedback').textContent = '';
+    document.getElementById('cheapPromptBox').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  async function copyText(textareaId, feedbackId) {
+    const text = document.getElementById(textareaId).value;
+    const feedback = document.getElementById(feedbackId);
+    try {
+      await navigator.clipboard.writeText(text);
+      feedback.textContent = 'コピーしました。ChatGPTに貼り付けて使えます。';
+    } catch {
+      const area = document.getElementById(textareaId);
+      area.removeAttribute('readonly');
+      area.select();
+      document.execCommand('copy');
+      area.setAttribute('readonly', 'readonly');
+      feedback.textContent = 'コピーしました。';
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  document.querySelectorAll('.seg-wrap').forEach(group => {
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('.seg-btn');
+      if (!btn) return;
+      group.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  document.getElementById('ingredientQty').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveIngredient();
+  });
+
+  loadIngredients();
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>

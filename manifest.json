@@ -1,0 +1,9 @@
+{
+  "name": "じすいメモ",
+  "short_name": "じすいメモ",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#FFF8EE",
+  "theme_color": "#FFF8EE",
+  "description": "初心者向けの食材管理＋GPT献立相談アプリ"
+}
